@@ -16,3 +16,6 @@
 
 # VScode files
 .vscode
+
+# Environment
+.aoc-session
