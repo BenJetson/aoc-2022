@@ -38,3 +38,8 @@ func (s *Solution) String() string {
 }
 
 type Solver func(input Input) (Solution, error)
+
+type PuzzleText struct {
+	Title string
+	Body  []string
+}
