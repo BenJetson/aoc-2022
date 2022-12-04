@@ -1,4 +1,4 @@
-package main
+package solver
 
 import (
 	"fmt"
@@ -30,7 +30,7 @@ func TestSolvers(t *testing.T) {
 			require.True(t, knownSolution.Part2.Valid,
 				"known solution part 2 answer must be valid to check")
 
-			solution, err := runSolverForDay(day, aoc.GetInputFilename(day))
+			solution, err := RunForDay(day)
 			require.NoError(t, err, "expect no error when solving")
 
 			assert.True(t, solution.Part1.Valid,

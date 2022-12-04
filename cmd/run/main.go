@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/BenJetson/aoc-2022/aoc"
+	"github.com/BenJetson/aoc-2022/solver"
 )
 
 var dayFlag = flag.Int("day", 0, "day of the advent calendar, 1-25")
@@ -23,7 +24,7 @@ func main() {
 		*inputFileFlag = aoc.GetInputFilename(*dayFlag)
 	}
 
-	solution, err := runSolverForDay(*dayFlag, *inputFileFlag)
+	solution, err := solver.RunForDayWithInput(*dayFlag, *inputFileFlag)
 	if err != nil {
 		log.Fatalf("error while solving puzzle: %v\n", err)
 	}
