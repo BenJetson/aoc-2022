@@ -28,7 +28,7 @@ func main() {
 
 	err := os.Mkdir("days/"+dayName, 0755)
 	if err != nil {
-		log.Fatalf("could not make directory: %v", err)
+		log.Fatalf("could not make directory: %v\n", err)
 	}
 
 	solveSource := strings.Join([]string{
@@ -43,10 +43,10 @@ func main() {
 
 	err = os.WriteFile("days/"+dayName+"/solve.go", []byte(solveSource), 0644)
 	if err != nil {
-		log.Fatalf("could not write source file: %v", err)
+		log.Fatalf("could not write source file: %v\n", err)
 	}
 
-	readMeTxt := strings.Join([]string{
+	readmeTxt := strings.Join([]string{
 		fmt.Sprintf("# Day %d: <!-- PUZZLE TITLE PLACEHOLDER -->", *dayFlag),
 		"",
 		"This puzzle is from the Advent of Code 2022.",
@@ -62,14 +62,14 @@ func main() {
 		"<!-- PART TWO PLACEHOLDER -->",
 	}, "\n") + "\n"
 
-	err = os.WriteFile("days/"+dayName+"/README.md", []byte(readMeTxt), 0644)
+	err = os.WriteFile("days/"+dayName+"/README.md", []byte(readmeTxt), 0644)
 	if err != nil {
-		log.Fatalf("could not write readme file: %v", err)
+		log.Fatalf("could not write readme file: %v\n", err)
 	}
 
 	daysSourceLines, err := utilities.ReadLinesFromFile("days/days.go")
 	if err != nil {
-		log.Fatalf("could not read days source file: %v", err)
+		log.Fatalf("could not read days source file: %v\n", err)
 	}
 
 	for index, data := range daysSourceLines {
@@ -99,6 +99,6 @@ func main() {
 	daysSource := strings.Join(daysSourceLines, "\n") + "\n"
 	err = os.WriteFile("days/days.go", []byte(daysSource), 0644)
 	if err != nil {
-		log.Fatalf("could not write days source file: %v", err)
+		log.Fatalf("could not write days source file: %v\n", err)
 	}
 }
