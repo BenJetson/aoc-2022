@@ -46,6 +46,27 @@ func main() {
 		log.Fatalf("could not write source file: %v", err)
 	}
 
+	readMeTxt := strings.Join([]string{
+		fmt.Sprintf("# Day %d: <!-- PUZZLE TITLE PLACEHOLDER -->", *dayFlag),
+		"",
+		"This puzzle is from the Advent of Code 2022.",
+		"",
+		fmt.Sprintf("[Source](https://adventofcode.com/2022/day/%d)", *dayFlag),
+		"",
+		"## Part One",
+		"",
+		"<!-- PART ONE PLACEHOLDER -->",
+		"",
+		"## Part Two",
+		"",
+		"<!-- PART TWO PLACEHOLDER -->",
+	}, "\n") + "\n"
+
+	err = os.WriteFile("days/"+dayName+"/README.md", []byte(readMeTxt), 0644)
+	if err != nil {
+		log.Fatalf("could not write readme file: %v", err)
+	}
+
 	daysSourceLines, err := utilities.ReadLinesFromFile("days/days.go")
 	if err != nil {
 		log.Fatalf("could not read days source file: %v", err)
