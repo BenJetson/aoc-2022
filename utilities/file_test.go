@@ -59,6 +59,13 @@ func TestReadLinesFromFile(t *testing.T) {
 				"16", "42", "35", "18", "93", "23", "97", "36", "81", "70",
 			},
 		},
+		{
+			alias:    "one_line",
+			filename: "testdata/one_line.txt",
+			expect: []string{
+				"asdfqwerty",
+			},
+		},
 	}
 
 	for _, tc := range testCases {
