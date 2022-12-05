@@ -49,7 +49,7 @@ func main() {
 	}
 
 	fmt.Printf("Saving solution for day %d, part %d.\n\n", *dayFlag, *partFlag)
-	fmt.Print(knownSolution.String())
+	fmt.Println(knownSolution.String())
 
 	err = os.WriteFile(
 		aoc.GetSolutionFilename(*dayFlag),
