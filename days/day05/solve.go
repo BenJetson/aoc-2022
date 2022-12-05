@@ -56,18 +56,39 @@ func (cs *CargoShip) HasStack(index int) bool {
 	return index < len(*cs)
 }
 
+func (cs *CargoShip) TopOfEach() (out string, err error) {
+	for index, stack := range *cs {
+		topCrate, ok := stack.Peek()
+		if !ok {
+			err = fmt.Errorf("no top crate on stack at index %d", index)
+			return
+		}
+
+		out += string(topCrate)
+	}
+	return
+}
+
 type CraneInstruction struct {
 	Quantity               int
 	SourceStack, DestStack int
 }
 
-func (cs *CargoShip) UseCrane(instruction CraneInstruction) error {
+func (cs *CargoShip) CheckBounds(instruction CraneInstruction) error {
 	if !cs.HasStack(instruction.SourceStack) {
 		return fmt.Errorf("invalid source stack %d",
 			instruction.SourceStack)
 	} else if !cs.HasStack(instruction.DestStack) {
 		return fmt.Errorf("invalid destination stack %d",
 			instruction.DestStack)
+	}
+	return nil
+}
+
+func (cs *CargoShip) UseCrane9000(instruction CraneInstruction) error {
+	err := cs.CheckBounds(instruction)
+	if err != nil {
+		return fmt.Errorf("bounds error: %w", err)
 	}
 
 	for i := 0; i < instruction.Quantity; i++ {
@@ -77,6 +98,31 @@ func (cs *CargoShip) UseCrane(instruction CraneInstruction) error {
 				instruction.SourceStack)
 		}
 
+		(*cs)[instruction.DestStack].Push(crate)
+	}
+
+	return nil
+}
+
+func (cs *CargoShip) UseCrane9001(instruction CraneInstruction) error {
+	err := cs.CheckBounds(instruction)
+	if err != nil {
+		return fmt.Errorf("bounds error: %w", err)
+	}
+
+	var movingStack Stack
+	for i := 0; i < instruction.Quantity; i++ {
+		crate, ok := (*cs)[instruction.SourceStack].Pop()
+		if !ok {
+			return fmt.Errorf("stack %d does not have enough crates to move",
+				instruction.SourceStack)
+		}
+
+		movingStack.Push(crate)
+	}
+
+	for len(movingStack) > 0 {
+		crate, _ := movingStack.Pop()
 		(*cs)[instruction.DestStack].Push(crate)
 	}
 
@@ -205,27 +251,46 @@ func SolvePuzzle(input aoc.Input) (s aoc.Solution, err error) {
 	}
 
 	for index, instruction := range instructions {
-		err = cs.UseCrane(instruction)
+		err = cs.UseCrane9000(instruction)
 		if err != nil {
-			err = fmt.Errorf("crane instruction at index %d failed: %w",
+			err = fmt.Errorf("crane 9000 instruction at index %d failed: %w",
 				index, err)
 			return
 		}
 
 	}
 
-	var topOfEach string
-	for index, stack := range cs {
-		topCrate, ok := stack.Peek()
-		if !ok {
-			err = fmt.Errorf("no top crate on stack at index %d", index)
-			return
-		}
-
-		topOfEach += string(topCrate)
+	topOfEach, err := cs.TopOfEach()
+	if err != nil {
+		err = fmt.Errorf("could not determine top of each stack: %w", err)
+		return
 	}
 
 	s.Part1.SaveAnswer(topOfEach)
+
+	cs, err = ReadCargoShip(cargoLines, crateCount)
+	if err != nil {
+		err = fmt.Errorf("could not parse cargo ship again: %w", err)
+		return
+	}
+
+	for index, instruction := range instructions {
+		err = cs.UseCrane9001(instruction)
+		if err != nil {
+			err = fmt.Errorf("crane 9001 instruction at index %d failed: %w",
+				index, err)
+			return
+		}
+
+	}
+
+	topOfEach, err = cs.TopOfEach()
+	if err != nil {
+		err = fmt.Errorf("could not determine top of each stack: %w", err)
+		return
+	}
+
+	s.Part2.SaveAnswer(topOfEach)
 
 	return
 }
