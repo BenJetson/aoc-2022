@@ -87,14 +87,18 @@ func SolvePuzzle(input aoc.Input) (s aoc.Solution, err error) {
 		pairs = append(pairs, p)
 	}
 
-	var overlapCount int
+	var fullOverlapCount, partialOverlapCount int
 	for _, p := range pairs {
 		if p.DoesFullyOverlap() {
-			overlapCount++
+			fullOverlapCount++
+			partialOverlapCount++
+		} else if p.DoesPartiallyOverlap() {
+			partialOverlapCount++
 		}
 	}
 
-	s.Part1.SaveAnswer(overlapCount)
+	s.Part1.SaveAnswer(fullOverlapCount)
+	s.Part2.SaveAnswer(partialOverlapCount)
 
 	return
 }
