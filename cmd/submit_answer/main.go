@@ -42,6 +42,12 @@ func main() {
 		2: solution.Part2.Value,
 	}[*partFlag]
 
+	fmt.Printf("Submitting for day %d, part %d.\n", *dayFlag, *partFlag)
+	fmt.Printf("Your answer is: %d.\n", answer)
+
+	fmt.Println("---")
+	fmt.Println("Result:")
+
 	result, err := client.SubmitAnswer(*dayFlag, *partFlag, answer)
 	if err != nil {
 		log.Fatalf("error while submitting answer: %v\n", err)
