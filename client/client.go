@@ -179,7 +179,7 @@ func (c *Client) GetPuzzleInput(day int) (string, error) {
 	return string(data), nil
 }
 
-func (c *Client) SubmitAnswer(day, part, answer int) (string, error) {
+func (c *Client) SubmitAnswer(day, part int, answer string) (string, error) {
 	u := url.URL{
 		Scheme: "https",
 		Host:   aocHost,
@@ -188,7 +188,7 @@ func (c *Client) SubmitAnswer(day, part, answer int) (string, error) {
 
 	data := make(url.Values)
 	data.Set("level", strconv.Itoa(part))
-	data.Set("answer", strconv.Itoa(answer))
+	data.Set("answer", answer)
 
 	reqBody := strings.NewReader(data.Encode())
 

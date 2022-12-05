@@ -3,7 +3,6 @@ package aoc
 import (
 	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/BenJetson/aoc-2022/utilities"
 )
@@ -40,10 +39,7 @@ func scanAnswer(line, label string) (Answer, error) {
 	}
 
 	if valueStr != "blank" {
-		a.Value, err = strconv.Atoi(valueStr)
-		if err != nil {
-			return a, fmt.Errorf("answer is not valid integer: %w", err)
-		}
+		a.Value = valueStr
 		a.Valid = true
 	}
 

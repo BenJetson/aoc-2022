@@ -97,8 +97,8 @@ func SolvePuzzle(input aoc.Input) (s aoc.Solution, err error) {
 		}
 	}
 
-	s.Part1.SaveAnswer(fullOverlapCount)
-	s.Part2.SaveAnswer(partialOverlapCount)
+	s.Part1.SaveIntAnswer(fullOverlapCount)
+	s.Part2.SaveIntAnswer(partialOverlapCount)
 
 	return
 }

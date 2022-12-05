@@ -56,7 +56,7 @@ func SolvePuzzle(input aoc.Input) (s aoc.Solution, err error) {
 		return elves[i].TotalCaloriesCarried() > elves[j].TotalCaloriesCarried()
 	})
 
-	s.Part1.SaveAnswer(elves[0].TotalCaloriesCarried())
+	s.Part1.SaveIntAnswer(elves[0].TotalCaloriesCarried())
 
 	if len(elves) < 3 {
 		err = errors.New("not enough elves to answer this question")
@@ -67,7 +67,7 @@ func SolvePuzzle(input aoc.Input) (s aoc.Solution, err error) {
 		topThreeTotal += elves[i].TotalCaloriesCarried()
 	}
 
-	s.Part2.SaveAnswer(topThreeTotal)
+	s.Part2.SaveIntAnswer(topThreeTotal)
 
 	return
 }

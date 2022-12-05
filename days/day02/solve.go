@@ -140,7 +140,7 @@ func SolvePuzzle(input aoc.Input) (s aoc.Solution, err error) {
 		totalScore += match.Score()
 	}
 
-	s.Part1.SaveAnswer(int(totalScore))
+	s.Part1.SaveIntAnswer(int(totalScore))
 
 	strategy = []Match{}
 	for index, line := range input {
@@ -174,7 +174,7 @@ func SolvePuzzle(input aoc.Input) (s aoc.Solution, err error) {
 		totalScore += match.Score()
 	}
 
-	s.Part2.SaveAnswer(int(totalScore))
+	s.Part2.SaveIntAnswer(int(totalScore))
 
 	return
 }

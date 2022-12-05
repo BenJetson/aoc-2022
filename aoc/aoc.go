@@ -8,11 +8,11 @@ import (
 type Input []string
 
 type Answer struct {
-	Value int
+	Value string
 	Valid bool
 }
 
-func (a *Answer) SaveAnswer(ans int) {
+func (a *Answer) SaveAnswer(ans string) {
 	if a.Valid {
 		panic("attempt to overwrite answer")
 	}
@@ -21,11 +21,15 @@ func (a *Answer) SaveAnswer(ans int) {
 	a.Valid = true
 }
 
+func (a *Answer) SaveIntAnswer(ans int) {
+	a.SaveAnswer(strconv.Itoa(ans))
+}
+
 func (a *Answer) String() string {
 	if !a.Valid {
 		return "blank"
 	}
-	return strconv.Itoa(a.Value)
+	return a.Value
 }
 
 type Solution struct {

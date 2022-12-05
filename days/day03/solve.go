@@ -106,7 +106,7 @@ func SolvePuzzle(input aoc.Input) (s aoc.Solution, err error) {
 		totalPriority += itemPtr.Priority()
 	}
 
-	s.Part1.SaveAnswer(totalPriority)
+	s.Part1.SaveIntAnswer(totalPriority)
 
 	if len(sacks)%3 != 0 {
 		err = fmt.Errorf("sack count of %d not divisible by 3", len(sacks))
@@ -130,7 +130,7 @@ func SolvePuzzle(input aoc.Input) (s aoc.Solution, err error) {
 		totalPriority += itemPtr.Priority()
 	}
 
-	s.Part2.SaveAnswer(totalPriority)
+	s.Part2.SaveIntAnswer(totalPriority)
 
 	return
 }

@@ -37,13 +37,13 @@ func main() {
 		log.Fatalf("error while solving puzzle: %v\n", err)
 	}
 
-	answer := map[int]int{
+	answer := map[int]string{
 		1: solution.Part1.Value,
 		2: solution.Part2.Value,
 	}[*partFlag]
 
 	fmt.Printf("Submitting for day %d, part %d.\n", *dayFlag, *partFlag)
-	fmt.Printf("Your answer is: %d.\n", answer)
+	fmt.Printf("Your answer is: %s.\n", answer)
 
 	fmt.Println("---")
 	fmt.Println("Result:")
