@@ -11,15 +11,39 @@ check:
 	fi
 
 
+.PHONY: check-dirty
+check-dirty:
+	@if ! git diff-index --quiet HEAD --; then \
+		echo "git working tree is dirty"; \
+		echo "must commit or discard to use this script"; \
+		exit 1; \
+	fi
+
 .PHONY: init
-init: check
+init: check check-dirty
 	go run ./cmd/init --day $(AOC_DAY)
+	git add .
+	git commit -m "Setup for day $(AOC_DAY)."
 	go run ./cmd/get_puzzle --day $(AOC_DAY) --part 1
 	go run ./cmd/get_input --day $(AOC_DAY)
+	git add .
+	git commit -m "Retrieved puzzle for day $(AOC_DAY), part 1."
 
 .PHONY: init2
-init2: check
+init2: check check-dirty
 	go run ./cmd/get_puzzle --day $(AOC_DAY) --part 2
+	git add .
+	git commit -m "Retrieved puzzle for day $(AOC_DAY), part 2."
+
+.PHONY: save1
+save1: check
+	git add .
+	git commit -m "Save solution for day $(AOC_DAY), part 1."
+
+.PHONY: save2
+save2: check
+	git add .
+	git commit -m "Save solution for day $(AOC_DAY), part 1."
 
 .PHONY: submit
 submit1: check
