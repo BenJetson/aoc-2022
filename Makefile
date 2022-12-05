@@ -37,13 +37,15 @@ init2: check check-dirty
 
 .PHONY: save1
 save1: check
+	go run ./cmd/save_answer --day $(AOC_DAY) --part 1
 	git add .
-	git commit -m "Save solution for day $(AOC_DAY), part 1."
+	git commit -m "Save code and answer for day $(AOC_DAY), part 1."
 
 .PHONY: save2
 save2: check
+	go run ./cmd/save_answer --day $(AOC_DAY) --part 2
 	git add .
-	git commit -m "Save solution for day $(AOC_DAY), part 2."
+	git commit -m "Save code and answer for day $(AOC_DAY), part 2."
 
 .PHONY: submit
 submit1: check
