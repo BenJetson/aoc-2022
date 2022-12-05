@@ -32,6 +32,28 @@ func ShapeFromChar(char string) (s Shape, err error) {
 	return
 }
 
+func ShapeThatLosesAgainst(s Shape) Shape {
+	if s == Rock {
+		return Scissors
+	} else if s == Paper {
+		return Rock
+	}
+
+	// s == Scissors
+	return Paper
+}
+
+func ShapeThatWinsAgainst(s Shape) Shape {
+	if s == Rock {
+		return Paper
+	} else if s == Paper {
+		return Scissors
+	}
+
+	// s == Scissors
+	return Rock
+}
+
 type Result Points
 
 const (
@@ -40,8 +62,24 @@ const (
 	Lose Result = 0
 )
 
+func ResultFromChar(char string) (r Result, err error) {
+	switch char {
+	case "X":
+		r = Lose
+	case "Y":
+		r = Draw
+	case "Z":
+		r = Win
+	default:
+		err = fmt.Errorf("unknown selection character '%s'", char)
+	}
+
+	return
+}
+
 type Match struct {
 	OpponentChoice, MyChoice Shape
+	DesiredResult            Result
 }
 
 func (m *Match) Result() Result {
@@ -49,13 +87,22 @@ func (m *Match) Result() Result {
 		return Draw
 	}
 
-	if m.OpponentChoice == Rock && m.MyChoice == Paper ||
-		m.OpponentChoice == Paper && m.MyChoice == Scissors ||
-		m.OpponentChoice == Scissors && m.MyChoice == Rock {
+	if m.OpponentChoice == ShapeThatLosesAgainst(m.MyChoice) {
 		return Win
 	}
 
 	return Lose
+}
+
+func (m *Match) MyChoiceForDesiredResult() Shape {
+	if m.DesiredResult == Win {
+		return ShapeThatWinsAgainst(m.OpponentChoice)
+	} else if m.DesiredResult == Lose {
+		return ShapeThatLosesAgainst(m.OpponentChoice)
+	}
+
+	// Draw
+	return m.OpponentChoice
 }
 
 func (m *Match) Score() Points {
@@ -94,6 +141,40 @@ func SolvePuzzle(input aoc.Input) (s aoc.Solution, err error) {
 	}
 
 	s.Part1.SaveAnswer(int(totalScore))
+
+	strategy = []Match{}
+	for index, line := range input {
+		chars := strings.Split(line, " ")
+		if len(chars) != 2 {
+			err = fmt.Errorf("invalid match on line %d", index+1)
+			return
+		}
+
+		var match Match
+
+		match.OpponentChoice, err = ShapeFromChar(chars[0])
+		if err != nil {
+			err = fmt.Errorf("opponent choice is invalid on line %d", index+1)
+			return
+		}
+
+		match.DesiredResult, err = ResultFromChar(chars[1])
+		if err != nil {
+			err = fmt.Errorf("desired result is invalid on line %d", index+1)
+			return
+		}
+
+		match.MyChoice = match.MyChoiceForDesiredResult()
+
+		strategy = append(strategy, match)
+	}
+
+	totalScore = 0
+	for _, match := range strategy {
+		totalScore += match.Score()
+	}
+
+	s.Part2.SaveAnswer(int(totalScore))
 
 	return
 }
