@@ -47,8 +47,8 @@ save2: check
 
 .PHONY: submit
 submit1: check
-	go run ./cmd/submit --day $(AOC_DAY) --part 1
+	go run ./cmd/submit_answer --day $(AOC_DAY) --part 1
 
 .PHONY: submit
 submit2: check
-	go run ./cmd/submit --day $(AOC_DAY) --part 2
+	go run ./cmd/submit_answer --day $(AOC_DAY) --part 2
