@@ -43,7 +43,7 @@ save1: check
 .PHONY: save2
 save2: check
 	git add .
-	git commit -m "Save solution for day $(AOC_DAY), part 1."
+	git commit -m "Save solution for day $(AOC_DAY), part 2."
 
 .PHONY: submit
 submit1: check
