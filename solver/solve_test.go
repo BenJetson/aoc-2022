@@ -13,7 +13,7 @@ import (
 )
 
 func TestSolvers(t *testing.T) {
-	require.NoError(t, os.Chdir("../.."), "must get to repo root for test")
+	require.NoError(t, os.Chdir(".."), "must get to repo root for test")
 
 	for day := 1; day <= 25; day++ {
 		if _, ok := days.Solvers[day]; !ok {
