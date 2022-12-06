@@ -1,7 +1,6 @@
 package day06
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -29,6 +28,24 @@ func CharSetFromString(s string, startIndex, endIndex int) CharSet {
 	return cs
 }
 
+func FindUniqueStreak(signal string, quantity int) (endIndex int, err error) {
+	if len(signal) < quantity {
+		err = fmt.Errorf("signal must be at least %d characters long", quantity)
+		return
+	}
+
+	for i := quantity; i < len(signal); i++ {
+		cs := CharSetFromString(signal, i-quantity, i)
+		if len(cs) == quantity {
+			endIndex = i
+			return
+		}
+	}
+
+	err = fmt.Errorf("no unique streak of %d characters found", quantity)
+	return
+}
+
 func SolvePuzzle(input aoc.Input) (s aoc.Solution, err error) {
 	if len(input) > 1 {
 		err = fmt.Errorf("expected one line of input; received %d", len(input))
@@ -37,26 +54,21 @@ func SolvePuzzle(input aoc.Input) (s aoc.Solution, err error) {
 
 	signal := input[0]
 
-	if len(signal) < 4 {
-		err = errors.New("signal must be at least 4 characters long")
+	startOfPacketIndex, err := FindUniqueStreak(signal, 4)
+	if err != nil {
+		err = fmt.Errorf("could not find start of packet: %w", err)
 		return
 	}
 
-	var endIndexOfMarker int
-	for i := 4; i < len(signal); i++ {
-		cs := CharSetFromString(signal, i-4, i)
-		if len(cs) == 4 {
-			endIndexOfMarker = i
-			break
-		}
-	}
+	s.Part1.SaveIntAnswer(startOfPacketIndex)
 
-	if endIndexOfMarker == 0 {
-		err = errors.New("no marker found")
+	startOfMessageIndex, err := FindUniqueStreak(signal, 14)
+	if err != nil {
+		err = fmt.Errorf("could not find start of message: %w", err)
 		return
 	}
 
-	s.Part1.SaveIntAnswer(endIndexOfMarker)
+	s.Part2.SaveIntAnswer(startOfMessageIndex)
 
 	return
 }
