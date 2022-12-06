@@ -54,3 +54,7 @@ submit1: check
 .PHONY: submit
 submit2: check
 	go run ./cmd/submit_answer --day $(AOC_DAY) --part 2
+
+.PHONY: test
+test:
+	go test ./solver -count=1 -v
