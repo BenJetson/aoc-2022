@@ -3,6 +3,7 @@ package day07
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -159,6 +160,45 @@ func FindDirectoriesSmallerThan(
 	return
 }
 
+type FileSystem struct {
+	Root *Directory
+
+	Capacity    FileSize
+	DesiredFree FileSize
+}
+
+func (fs *FileSystem) AmountUsed() FileSize {
+	return fs.Root.TotalSize()
+}
+
+func (fs *FileSystem) AmountFree() FileSize {
+	return fs.Capacity - fs.AmountUsed()
+}
+
+func (fs *FileSystem) AmountToFreeForDesired() FileSize {
+	if fs.AmountFree() < fs.DesiredFree {
+		return fs.DesiredFree - fs.AmountFree()
+	}
+	return 0
+}
+
+func (fs *FileSystem) FindDeletionCandidate() (target *Directory) {
+	minSize := fs.AmountToFreeForDesired()
+	allDirectories := FindDirectoriesSmallerThan(fs.Capacity, fs.Root)
+	sort.Slice(allDirectories, func(i, j int) bool {
+		return allDirectories[i].TotalSize() < allDirectories[j].TotalSize()
+	})
+
+	for _, pwd := range allDirectories {
+		if pwd.TotalSize() >= minSize {
+			target = pwd
+			break
+		}
+	}
+
+	return
+}
+
 func SolvePuzzle(input aoc.Input) (s aoc.Solution, err error) {
 	root, err := ReadShellSession(input)
 	if err != nil {
@@ -173,6 +213,16 @@ func SolvePuzzle(input aoc.Input) (s aoc.Solution, err error) {
 	}
 
 	s.Part1.SaveIntAnswer(int(total))
+
+	fs := FileSystem{Root: root, Capacity: 70000000, DesiredFree: 30000000}
+
+	dirToDelete := fs.FindDeletionCandidate()
+	if dirToDelete == nil {
+		err = errors.New("no suitable candidate for deletion found")
+		return
+	}
+
+	s.Part2.SaveIntAnswer(int(dirToDelete.TotalSize()))
 
 	return
 }
