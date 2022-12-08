@@ -10,6 +10,7 @@ import (
 	"github.com/BenJetson/aoc-2022/days/day05"
 	"github.com/BenJetson/aoc-2022/days/day06"
 	"github.com/BenJetson/aoc-2022/days/day07"
+	"github.com/BenJetson/aoc-2022/days/day08"
 	// END DAY IMPORTS
 )
 
@@ -22,5 +23,6 @@ var Solvers = map[int]aoc.Solver{
 	5: day05.SolvePuzzle,
 	6: day06.SolvePuzzle,
 	7: day07.SolvePuzzle,
+	8: day08.SolvePuzzle,
 	// END DAY SOLVERS
 }
