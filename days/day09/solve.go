@@ -60,21 +60,30 @@ func VectorSouthWest(p *Position) { p.Y--; p.X-- }
 func VectorNorthWest(p *Position) { p.Y++; p.X-- }
 
 type RopeSimulator struct {
-	Head Position
-	Tail Position
+	Head  Position
+	Tails []Position
 
 	TailHistory PositionHistory
 }
 
-func NewRopeSimulator() *RopeSimulator {
+func NewRopeSimulator(tailCount int) *RopeSimulator {
 	rs := &RopeSimulator{
 		TailHistory: make(PositionHistory),
+		Tails:       make([]Position, tailCount),
 	}
 
-	// Record initial tail position.
-	rs.TailHistory.Record(rs.Tail)
+	// Start new rope simulators with the initial tail position recorded.
+	rs.RecordTailPosition()
 
 	return rs
+}
+
+func (rs *RopeSimulator) LastTailPosition() Position {
+	return rs.Tails[len(rs.Tails)-1]
+}
+
+func (rs *RopeSimulator) RecordTailPosition() {
+	rs.TailHistory.Record(rs.LastTailPosition())
 }
 
 func Max(values ...int) (out int) {
@@ -92,7 +101,10 @@ func Max(values ...int) (out int) {
 }
 
 func (rs *RopeSimulator) String() string {
-	gridSize := Max(5, rs.Head.X, rs.Head.Y, rs.Tail.X, rs.Tail.Y) + 1
+	gridSize := Max(5, rs.Head.X, rs.Head.Y) + 1
+	for _, tail := range rs.Tails {
+		gridSize = Max(gridSize, tail.X+1, tail.Y+1)
+	}
 
 	grid := make([][]string, gridSize)
 	for i := 0; i < gridSize; i++ {
@@ -107,7 +119,9 @@ func (rs *RopeSimulator) String() string {
 	}
 
 	putAtPos("s", Position{X: 0, Y: 0})
-	putAtPos("T", rs.Tail)
+	for index := len(rs.Tails) - 1; index >= 0; index-- {
+		putAtPos(strconv.Itoa(index+1), rs.Tails[index])
+	}
 	putAtPos("H", rs.Head)
 
 	var s strings.Builder
@@ -134,34 +148,33 @@ type Instruction struct {
 	Steps     int
 }
 
-func (rs *RopeSimulator) TailStep() {
-	if rs.Tail.Equals(rs.Head) {
+func (rs *RopeSimulator) TailStep(leader, follower *Position) {
+	if follower.Equals(*leader) {
 		return
 	}
 
 	var v VectorFunc
 
 	switch {
-	case rs.Tail.X == rs.Head.X && rs.Tail.Y < rs.Head.Y:
+	case follower.X == leader.X && follower.Y < leader.Y:
 		v = VectorNorth
-	case rs.Tail.X == rs.Head.X && rs.Tail.Y > rs.Head.Y:
+	case follower.X == leader.X && follower.Y > leader.Y:
 		v = VectorSouth
-	case rs.Tail.X < rs.Head.X && rs.Tail.Y == rs.Head.Y:
+	case follower.X < leader.X && follower.Y == leader.Y:
 		v = VectorEast
-	case rs.Tail.X > rs.Head.X && rs.Tail.Y == rs.Head.Y:
+	case follower.X > leader.X && follower.Y == leader.Y:
 		v = VectorWest
-	case rs.Tail.X < rs.Head.X && rs.Tail.Y < rs.Head.Y:
+	case follower.X < leader.X && follower.Y < leader.Y:
 		v = VectorNorthEast
-	case rs.Tail.X < rs.Head.X && rs.Tail.Y > rs.Head.Y:
+	case follower.X < leader.X && follower.Y > leader.Y:
 		v = VectorSouthEast
-	case rs.Tail.X > rs.Head.X && rs.Tail.Y > rs.Head.Y:
+	case follower.X > leader.X && follower.Y > leader.Y:
 		v = VectorSouthWest
-	case rs.Tail.X > rs.Head.X && rs.Tail.Y < rs.Head.Y:
+	case follower.X > leader.X && follower.Y < leader.Y:
 		v = VectorNorthWest
 	}
 
-	v.Apply(&rs.Tail)
-	rs.TailHistory.Record(rs.Tail)
+	v.Apply(follower)
 }
 
 func (rs *RopeSimulator) Execute(instr Instruction) {
@@ -169,9 +182,18 @@ func (rs *RopeSimulator) Execute(instr Instruction) {
 	for i := 0; i < instr.Steps; i++ {
 		instr.Direction.Apply(&rs.Head)
 
-		if !rs.Tail.IsTouching(rs.Head) {
-			rs.TailStep()
+		leader := &rs.Head
+		for index := range rs.Tails {
+			follower := &rs.Tails[index]
+
+			if !follower.IsTouching(*leader) {
+				rs.TailStep(leader, follower)
+			}
+
+			leader = follower
 		}
+
+		rs.RecordTailPosition()
 
 		// fmt.Println(rs.String())
 	}
@@ -223,12 +245,17 @@ func SolvePuzzle(input aoc.Input) (s aoc.Solution, err error) {
 		return
 	}
 
-	rs := NewRopeSimulator()
+	rs := NewRopeSimulator(1)
 	for _, instr := range instrs {
 		rs.Execute(instr)
 	}
-
 	s.Part1.SaveIntAnswer(rs.TailHistory.Count())
+
+	rs = NewRopeSimulator(9)
+	for _, instr := range instrs {
+		rs.Execute(instr)
+	}
+	s.Part2.SaveIntAnswer(rs.TailHistory.Count())
 
 	return
 }
