@@ -9,8 +9,8 @@ import (
 )
 
 type Tree struct {
-	Height int
-	Seen   bool
+	Height            int
+	ExternallyVisible bool
 }
 
 type ForestRow []Tree
@@ -50,8 +50,8 @@ func (f Forest) String() string {
 		for c := 0; c < f.ColCount(); c++ {
 			t := f.Row(r).Col(c)
 			s.WriteString(strconv.Itoa(t.Height))
-			if t.Seen {
-				s.WriteString("s")
+			if t.ExternallyVisible {
+				s.WriteString("e")
 			} else {
 				s.WriteString("_")
 			}
@@ -113,7 +113,7 @@ func (f Forest) Scan(start Position, v Vector) {
 	for t != nil {
 		isTallerThanHighest := t.Height > highestSoFar
 		if isTallerThanHighest {
-			t.Seen = true
+			t.ExternallyVisible = true
 			highestSoFar = t.Height
 		}
 
@@ -122,7 +122,7 @@ func (f Forest) Scan(start Position, v Vector) {
 	}
 }
 
-func (f Forest) MarkVisibleTrees() {
+func (f Forest) MarkExternallyVisibleTrees() {
 	rowCount := f.RowCount()
 	colCount := f.ColCount()
 
@@ -130,13 +130,13 @@ func (f Forest) MarkVisibleTrees() {
 		row := f.Row(r)
 
 		// Leftmost and rightmost tree are always perimiter.
-		row.Col(0).Seen = true
-		row.Col(colCount - 1).Seen = true
+		row.Col(0).ExternallyVisible = true
+		row.Col(colCount - 1).ExternallyVisible = true
 
 		// On first and last rows, all trees from 1 to colCount-1 are perimiter.
 		if r == 0 || r == rowCount-1 {
 			for c := 1; c < colCount-1; c++ {
-				row.Col(c).Seen = true
+				row.Col(c).ExternallyVisible = true
 			}
 		}
 	}
@@ -153,10 +153,10 @@ func (f Forest) MarkVisibleTrees() {
 
 }
 
-func (f Forest) CountSeenTrees() (count int) {
+func (f Forest) CountExternallyVisibleTrees() (count int) {
 	for r := 0; r < f.RowCount(); r++ {
 		for c := 0; c < f.ColCount(); c++ {
-			if f.Row(r).Col(c).Seen {
+			if f.Row(r).Col(c).ExternallyVisible {
 				count++
 			}
 		}
@@ -171,8 +171,8 @@ func SolvePuzzle(input aoc.Input) (s aoc.Solution, err error) {
 		return
 	}
 
-	f.MarkVisibleTrees()
-	count := f.CountSeenTrees()
+	f.MarkExternallyVisibleTrees()
+	count := f.CountExternallyVisibleTrees()
 	s.Part1.SaveIntAnswer(count)
 
 	return
