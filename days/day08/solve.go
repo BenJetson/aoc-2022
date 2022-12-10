@@ -8,9 +8,18 @@ import (
 	"github.com/BenJetson/aoc-2022/aoc"
 )
 
+type ScenicScoreSheet struct {
+	North, East, South, West int
+}
+
+func (s *ScenicScoreSheet) Total() int {
+	return s.North * s.East * s.South * s.West
+}
+
 type Tree struct {
 	Height            int
 	ExternallyVisible bool
+	ScenicScore       ScenicScoreSheet
 }
 
 type ForestRow []Tree
@@ -44,7 +53,7 @@ func (f Forest) ColCount() int {
 	return len(f)
 }
 
-func (f Forest) String() string {
+func (f Forest) ExternallyVisibleString() string {
 	var s strings.Builder
 	for r := 0; r < f.RowCount(); r++ {
 		for c := 0; c < f.ColCount(); c++ {
@@ -57,6 +66,36 @@ func (f Forest) String() string {
 			}
 			s.WriteString(" ")
 		}
+		s.WriteString("\n")
+	}
+	return s.String()
+}
+
+// ScenicScoreCSVString creates a comma separated value string with groups that
+// look like a cross:
+//
+//	  | N | T
+//	W | H | E
+//	  | S |
+//
+// Where N/E/S/W are the cardinal direction scenic score values, H is the
+// height of the tree, and T is the total scenic score.
+func (f Forest) ScenicScoreCSVString() string {
+	var s strings.Builder
+	for r := 0; r < f.RowCount(); r++ {
+		var line1, line2, line3 strings.Builder
+		for c := 0; c < f.ColCount(); c++ {
+			t := f.Row(r).Col(c)
+
+			line1.WriteString(fmt.Sprintf(",,%d,%d,", t.ScenicScore.North,
+				t.ScenicScore.Total()))
+			line2.WriteString(fmt.Sprintf(",%d,%d,%d,",
+				t.ScenicScore.West, t.Height, t.ScenicScore.East))
+			line3.WriteString(fmt.Sprintf(",,%d,,", t.ScenicScore.South))
+		}
+		s.WriteString(line1.String() + "\n")
+		s.WriteString(line2.String() + "\n")
+		s.WriteString(line3.String() + "\n")
 		s.WriteString("\n")
 	}
 	return s.String()
@@ -94,20 +133,20 @@ type Position struct {
 	r, c int
 }
 
-func (p *Position) Move(v Vector) {
-	p.r += v.r
-	p.c += v.c
-}
+type VectorFunc func(p *Position)
 
-type Vector struct {
-	r, c int
-}
+func (v VectorFunc) Apply(p *Position) { v(p) }
 
-func (f Forest) Scan(start Position, v Vector) {
+func VectorNorth(p *Position) { p.r-- }
+func VectorEast(p *Position)  { p.c++ }
+func VectorSouth(p *Position) { p.r++ }
+func VectorWest(p *Position)  { p.c-- }
+
+func (f Forest) ScanExternalVisibility(start Position, v VectorFunc) {
 	p := start
 	t := f.Row(p.r).Col(p.c)
 	highestSoFar := t.Height
-	p.Move(v)
+	v.Apply(&p)
 	t = f.Row(p.r).Col(p.c)
 
 	for t != nil {
@@ -117,7 +156,7 @@ func (f Forest) Scan(start Position, v Vector) {
 			highestSoFar = t.Height
 		}
 
-		p.Move(v)
+		v.Apply(&p)
 		t = f.Row(p.r).Col(p.c)
 	}
 }
@@ -142,13 +181,13 @@ func (f Forest) MarkExternallyVisibleTrees() {
 	}
 
 	for r := 1; r < rowCount-1; r++ {
-		f.Scan(Position{r: r, c: 0}, Vector{r: 0, c: 1})
-		f.Scan(Position{r: r, c: colCount - 1}, Vector{r: 0, c: -1})
+		f.ScanExternalVisibility(Position{r: r, c: 0}, VectorEast)
+		f.ScanExternalVisibility(Position{r: r, c: colCount - 1}, VectorWest)
 	}
 
 	for c := 1; c < colCount-1; c++ {
-		f.Scan(Position{r: 0, c: c}, Vector{r: 1, c: 0})
-		f.Scan(Position{r: rowCount - 1, c: c}, Vector{r: -1, c: 0})
+		f.ScanExternalVisibility(Position{r: 0, c: c}, VectorSouth)
+		f.ScanExternalVisibility(Position{r: rowCount - 1, c: c}, VectorNorth)
 	}
 
 }
@@ -158,6 +197,54 @@ func (f Forest) CountExternallyVisibleTrees() (count int) {
 		for c := 0; c < f.ColCount(); c++ {
 			if f.Row(r).Col(c).ExternallyVisible {
 				count++
+			}
+		}
+	}
+	return
+}
+
+func (f Forest) ScanScenicScore(start Position, v VectorFunc) (score int) {
+	p := start
+	t := f.Row(p.r).Col(p.c)
+
+	myHeight := t.Height
+
+	v.Apply(&p)
+	t = f.Row(p.r).Col(p.c)
+
+	for t != nil {
+		score++
+		if t.Height >= myHeight {
+			break
+		}
+
+		v.Apply(&p)
+		t = f.Row(p.r).Col(p.c)
+	}
+
+	return
+}
+
+func (f Forest) CalculateScenicScores() {
+	for r := 0; r < f.RowCount(); r++ {
+		for c := 0; c < f.ColCount(); c++ {
+			t := f.Row(r).Col(c)
+			p := Position{r: r, c: c}
+
+			t.ScenicScore.North = f.ScanScenicScore(p, VectorNorth)
+			t.ScenicScore.East = f.ScanScenicScore(p, VectorEast)
+			t.ScenicScore.South = f.ScanScenicScore(p, VectorSouth)
+			t.ScenicScore.West = f.ScanScenicScore(p, VectorWest)
+		}
+	}
+}
+
+func (f Forest) HighestScenicScore() (highestScore int) {
+	for r := 0; r < f.RowCount(); r++ {
+		for c := 0; c < f.ColCount(); c++ {
+			score := f.Row(r).Col(c).ScenicScore.Total()
+			if score > highestScore {
+				highestScore = score
 			}
 		}
 	}
@@ -174,6 +261,10 @@ func SolvePuzzle(input aoc.Input) (s aoc.Solution, err error) {
 	f.MarkExternallyVisibleTrees()
 	count := f.CountExternallyVisibleTrees()
 	s.Part1.SaveIntAnswer(count)
+
+	f.CalculateScenicScores()
+	highest := f.HighestScenicScore()
+	s.Part2.SaveIntAnswer(highest)
 
 	return
 }
