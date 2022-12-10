@@ -63,24 +63,31 @@ func (r Register) HistoryString(end CycleNumber) string {
 type RegisterHistory map[CycleNumber]Register
 
 type Processor struct {
-	Cycle CycleNumber
-	X     *Register
+	Display *Display
+	Cycle   CycleNumber
+	X       *Register
 }
 
 func NewProcessor() *Processor {
 	return &Processor{
-		Cycle: 1,
-		X:     NewRegister(1),
+		Display: NewDisplay(40, 6),
+		Cycle:   1,
+		X:       NewRegister(1),
 	}
 }
 
-func (p *Processor) ExecNoOp() {
+func (p *Processor) ClockTick() {
+	p.Display.Render(p.Cycle, p.X.Value)
 	p.Cycle++
 }
 
+func (p *Processor) ExecNoOp() {
+	p.ClockTick()
+}
+
 func (p *Processor) ExecAddX(value int) {
-	p.Cycle++
-	p.Cycle++
+	p.ClockTick()
+	p.ClockTick()
 	p.X.Set(p.Cycle, p.X.Value+RegisterValue(value))
 }
 
@@ -91,6 +98,61 @@ func (p *Processor) Execute(instr Instruction) {
 	case OpCodeAddX:
 		p.ExecAddX(instr.Operand1)
 	}
+}
+
+type Pixel bool
+
+type Display struct {
+	Width, Height int
+	Output        [][]Pixel
+}
+
+func NewDisplay(width, height int) *Display {
+	d := &Display{Width: width, Height: height}
+
+	d.Output = make([][]Pixel, height)
+	for y := 0; y < d.Height; y++ {
+		d.Output[y] = make([]Pixel, width)
+	}
+
+	return d
+}
+
+func (d *Display) String() string {
+	var s strings.Builder
+	for y := 0; y < d.Height; y++ {
+		for x := 0; x < d.Width; x++ {
+			if d.Output[y][x] {
+				s.WriteString("#")
+			} else {
+				s.WriteString(".")
+			}
+		}
+		s.WriteString("\n")
+	}
+	return s.String()
+}
+
+func (d *Display) RowString(y, maxCol int) string {
+	var s strings.Builder
+	for x := 0; x <= maxCol; x++ {
+		if d.Output[y][x] {
+			s.WriteString("#")
+		} else {
+			s.WriteString(".")
+		}
+	}
+	s.WriteString("\n")
+	return s.String()
+}
+
+func (d *Display) Render(c CycleNumber, r RegisterValue) {
+	cycleIndex := int(c) - 1
+	y := (cycleIndex / d.Width) % d.Height
+	x := cycleIndex % d.Width
+	p := Pixel(x > int(r)-2 && x < int(r)+2)
+
+	d.Output[y][x] = p
 }
 
 type OpCode string
@@ -166,6 +228,21 @@ func SolvePuzzle(input aoc.Input) (s aoc.Solution, err error) {
 	}
 
 	s.Part1.SaveIntAnswer(sum)
+
+	out := p.Display.String()
+
+	// Using a lookup table of known outputs since it doesn't make sense to
+	// develop a letter recognizer for this. This allows automated testing to
+	// work while still relying on human interpreatation of the outputs.
+	result, ok := stringToLetters[out]
+	if !ok {
+		err = fmt.Errorf(
+			"output of display has not been seen before; "+
+				"need human interpretation:\n%s", out)
+		return
+	}
+
+	s.Part2.SaveAnswer(result)
 
 	return
 }
