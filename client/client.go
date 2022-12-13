@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -23,6 +24,10 @@ const aocHost = "adventofcode.com"
 
 // GetSessionToken retrieves the session token from disk.
 func getSessionToken() (string, error) {
+	if envToken := os.Getenv("AOC_SESSION_TOKEN"); len(envToken) > 0 {
+		return envToken, nil
+	}
+
 	lines, err := utilities.ReadLinesFromFile(".aoc-session")
 	if err != nil {
 		return "", fmt.Errorf("cannot read session file: %w", err)
